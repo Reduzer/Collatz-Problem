@@ -191,9 +191,10 @@ int main(int, char**)
 
     bool show_demo_window = true;
     int nStartNumber = 0;
-    bool bNumberChanged;
+    bool bNumberChanged = false;
     CollatzProblem oCollatz;
     std::vector<int> vnNumbers = {0,1,2,3,4,5};
+    std::vector<int> &test = vnNumbers;
 
     float afNumbers[5];
     afNumbers[0] = 1;
@@ -230,29 +231,21 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        if (show_demo_window)
-            /*ImGui::ShowDemoWindow(&show_demo_window);*/
-            ImPlot::ShowDemoWindow();
-        {
-            static int counter = 0;
+        auto io = ImGui::GetIO();
 
-            ImGui::Begin("Config");
+        ImGui::SetWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
+        ImGui::SetNextWindowPos(ImVec2(0,0));
 
-            ImGui::InputInt("Startnumber", &nStartNumber);
-            ImGui::Checkbox("Diagramm anzeigen", &bNumberChanged);
+        if (true) {
+            ImGui::Begin("Diagramm", &bNumberChanged, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
 
+            if(ImGui::InputInt("Startnumber", &nStartNumber)) {
+                bNumberChanged = true;
+            }
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
-        }
-
-        if (bNumberChanged) {
-            ImGui::Begin("Diagramm", &bNumberChanged);
 
             if (ImPlot::BeginPlot("Test",0,0,ImVec2(-1,-1),0,ImPlotAxisFlags_NoInitialFit,ImPlotAxisFlags_NoInitialFit)) {
                 ImPlot::SetupAxes("Step","Value");
-                std::vector<int> &test = vnNumbers;
-
-                oCollatz.CollatzProblemFunc(nStartNumber, test);
 
                 /*int anNumbers[1001];
                 std::copy(vnNumbers.begin(), vnNumbers.end(), anNumbers);*/
@@ -260,13 +253,16 @@ int main(int, char**)
                 ImPlot::PlotBars("Collatz-Problem", afNumbers, 5, 0.3, 1);
                 ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle);
                 ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle);
-                
-                
-                
 
                 ImPlot::EndPlot();
             }
             ImGui::End();
+        }
+
+        if (bNumberChanged) {
+            oCollatz.CollatzProblemFunc(nStartNumber, test);
+
+            bNumberChanged = false;
         }
 
 #pragma region ImGui Stuff
